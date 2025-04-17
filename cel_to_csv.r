@@ -1,4 +1,4 @@
-# il codice è in grado di discriminare la tipologia di piattaforma specifica della tipologia Affymex utilizzata
+# il codice è in grado di discriminare la tipologia di piattaforma specifica della tipologia Affymex utilizzata  # nolint
 # sulla base della piattaforma, separa correttamente i dataset
 
 if (!requireNamespace("BiocManager", quietly = TRUE))
@@ -80,7 +80,8 @@ convert_cel_to_csv <- function(cel_dir_path) {
       write.csv(matrice_affy, file = file.path(csv_dir_path, "data_affy.csv"))
     }
 
-    cat("Conversione completata.\n")
+    cat("Conversione completata.\n") # nolint
 }
 
 convert_cel_to_csv("GSE6575/CEL")
+
