@@ -137,6 +137,7 @@ pipeline <- function(cel_dir_path) {
 
         # Merge annotation (SYMBOL) with expression matrix
         exprs_df <- as.data.frame(exprs_mat)
+        
         exprs_df$PROBEID <- probe_ids
         exprs_df$SYMBOL <- annot$SYMBOL[match(probe_ids, annot$PROBEID)]
         merged <- exprs_df
