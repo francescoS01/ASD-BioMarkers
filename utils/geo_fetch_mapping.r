@@ -61,3 +61,12 @@ get_Info_from_GEO <- function(geo, output_dir) {
 
     cat("File salvato in:", output_file, "\n")
     }
+
+
+args <- commandArgs(trailingOnly = TRUE)
+if (length(args) != 2) {
+    stop("Uso: Rscript get_geo_metadata.R <GSE_code> <output_dir>")
+}
+geo <- args[1]
+out_dir <- args[2]
+get_Info_from_GEO(geo, out_dir)
