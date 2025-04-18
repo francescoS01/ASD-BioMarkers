@@ -25,7 +25,8 @@ pipeline <- function(agilent_dir) {
             stop("Required columns missing in file: ", file)
         }
         sample_code <- tools::file_path_sans_ext(basename(file))
-        expr <- aggregate(gProcessedSignal ~ SystematicName,
+        # aggregate expression per probe
+        expr <- aggregate(gProcessedSignal ~ ProbeName,
                           data = df,
                           FUN = mean,
                           na.rm = TRUE)
@@ -37,29 +38,26 @@ pipeline <- function(agilent_dir) {
     final_mat <- expr_list[[1]]
     if (length(expr_list) > 1) {
         for (i in 2:length(expr_list)) {
-            final_mat <- merge(final_mat, expr_list[[i]], by = "SystematicName", all = TRUE)
+            final_mat <- merge(final_mat, expr_list[[i]], by = "ProbeName", all = TRUE)
         }
     }
-    # set ProbeID from original probe names
-    final_mat$ProbeID <- as.character(final_mat$SystematicName)
-    final_mat$SystematicName <- NULL
+    # rename ProbeName column to ProbeID
+    final_mat <- final_mat %>%
+        rename(ProbeID = ProbeName)
 
     # retrieve platform annotation for GPL6480
     gpl <- getGEO("GPL6480", AnnotGPL=TRUE)
     anno_df <- Table(gpl)
     cols <- colnames(anno_df)
-    id_col <- cols[1]
-    sym_candidates <- grep("Symbol", cols, ignore.case = TRUE, value = TRUE)
-    if (length(sym_candidates) == 0) stop("Gene symbol column not found in GPL6480 annotation")
-    sym_col <- sym_candidates[1]
+    id_col  <- grep("^id$|probe|accession", cols, ignore.case=TRUE, value=TRUE)[1]
+    sym_col <- grep("gene_symbol|symbol", cols, ignore.case=TRUE, value=TRUE)[1]
+    if (is.na(id_col) || is.na(sym_col)) stop("Cannot find ID or Symbol columns in GPL6480 annotation: found ", paste(cols, collapse=","))
     anno <- anno_df[, c(id_col, sym_col)]
-    colnames(anno) <- c("ProbeID", "Symbol")
+    colnames(anno) <- c("ProbeID","Symbol")
     anno$ProbeID <- as.character(anno$ProbeID)
 
     # join and aggregate by Gene Symbol
     df_sym <- merge(final_mat, anno, by = "ProbeID", all.x = TRUE)
-    # fill missing gene symbols with probe ID
-    df_sym$Symbol[is.na(df_sym$Symbol)] <- df_sym$ProbeID
     expr_sym <- aggregate(. ~ Symbol, data = df_sym[ , !(names(df_sym) %in% "ProbeID")], FUN = mean, na.rm = TRUE)
 
     # write expression matrix with Gene Symbol
