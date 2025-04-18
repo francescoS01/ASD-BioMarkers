@@ -63,6 +63,8 @@ get_Info_from_GEO <- function(geo, output_dir) {
     }
 
 
+
+if (!interactive() && sys.nframe() == 0){
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args) != 2) {
     stop("Uso: Rscript get_geo_metadata.R <GSE_code> <output_dir>")
@@ -70,3 +72,4 @@ if (length(args) != 2) {
 geo <- args[1]
 out_dir <- args[2]
 get_Info_from_GEO(geo, out_dir)
+}
